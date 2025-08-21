@@ -4,4 +4,9 @@ import com.filipegabriel.smart_budget.entities.Bank;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BankRepository extends JpaRepository<Bank, Long> {
+
+    boolean existsByCode(String code);
+
+    Bank findByCode(String code);
+
 }

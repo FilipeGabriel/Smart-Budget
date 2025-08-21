@@ -19,8 +19,11 @@ public class Bank {
     @EqualsAndHashCode.Include
     private Long clientId;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
+
+    @Column(unique = true, nullable = false)
+    private String code;
 
     @JsonIgnore
     @OneToMany(mappedBy = "bank")

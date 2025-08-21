@@ -31,6 +31,12 @@ public class Client {
     private String email;
 
     @Column(nullable = false)
+    private String telephone;
+
+    @Column(nullable = false)
+    private Boolean active;
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ClientType clientType;
 

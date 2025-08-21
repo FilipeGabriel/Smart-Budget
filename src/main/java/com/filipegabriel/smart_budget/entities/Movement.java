@@ -31,7 +31,6 @@ public class Movement {
     @Enumerated(EnumType.STRING)
     private MovementType movementType;
 
-    @Column(nullable = false)
     private String description;
 
     @JsonIgnore

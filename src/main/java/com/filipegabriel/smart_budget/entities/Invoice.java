@@ -29,7 +29,9 @@ public class Invoice {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private BigDecimal totalValue;
+    private BigDecimal feeAmount;
+
+    private Long movementCount;
 
     @JsonIgnore
     @ManyToOne
