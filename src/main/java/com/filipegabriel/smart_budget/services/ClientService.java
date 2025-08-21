@@ -119,16 +119,10 @@ public class ClientService {
         return client;
     }
 
-    public LocalDate datePattern(String date) {
-        return LocalDate.parse(date, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-    }
-
     public Client update(Long id, NewClientDTO clientDTO) {
         Client client = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado com o ID: " + id));
 
-        client.setName(clientDTO.getClientName());
-        client.setEmail(clientDTO.getClientEmail());
-        client.setTelephone(clientDTO.getClientTelephone());
+        updateClient(client, clientDTO);
 
         return repository.save(client);
     }
@@ -139,5 +133,15 @@ public class ClientService {
         client.setActive(!client.getActive());
 
         return repository.save(client);
+    }
+
+    public LocalDate datePattern(String date) {
+        return LocalDate.parse(date, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    public void updateClient(Client oldClient, NewClientDTO newClient) {
+        oldClient.setName(newClient.getClientName());
+        oldClient.setEmail(newClient.getClientEmail());
+        oldClient.setTelephone(newClient.getClientTelephone());
     }
 }

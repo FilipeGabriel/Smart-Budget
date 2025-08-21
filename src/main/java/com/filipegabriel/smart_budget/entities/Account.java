@@ -22,7 +22,7 @@ public class Account {
     @EqualsAndHashCode.Include
     private Long accountId;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String accountNumber;
 
     @Column(nullable = false)

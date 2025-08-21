@@ -22,7 +22,7 @@ public class Address {
     @Column(nullable = false)
     private String street;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String number;
 
     @Column(nullable = false)
