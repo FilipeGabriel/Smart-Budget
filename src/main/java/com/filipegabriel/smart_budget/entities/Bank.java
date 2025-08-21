@@ -17,7 +17,7 @@ public class Bank {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    private Long clientId;
+    private Long bankId;
 
     @Column(unique = true, nullable = false)
     private String name;
