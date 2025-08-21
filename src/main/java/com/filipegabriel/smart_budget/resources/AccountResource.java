@@ -6,7 +6,9 @@ import com.filipegabriel.smart_budget.services.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -37,7 +39,8 @@ public class AccountResource {
     @PostMapping("/external")
     public ResponseEntity<Account> createAccount(@RequestBody AccountDTO accountDTO) {
         Account account = service.insert(accountDTO);
-        return ResponseEntity.ok(account);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(account.getAccountId()).toUri();
+        return ResponseEntity.created(uri).body(account);
     }
 
     @PutMapping("/external/change-status/{id}")
