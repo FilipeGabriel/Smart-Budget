@@ -1,7 +1,6 @@
 package com.filipegabriel.smart_budget.resources;
 
 import com.filipegabriel.smart_budget.entities.Address;
-import com.filipegabriel.smart_budget.entities.Client;
 import com.filipegabriel.smart_budget.resources.dto.AddressDTO;
 import com.filipegabriel.smart_budget.services.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
