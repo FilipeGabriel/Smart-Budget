@@ -1,9 +1,11 @@
 package com.filipegabriel.smart_budget.services;
 
 import com.filipegabriel.smart_budget.entities.Client;
+import com.filipegabriel.smart_budget.entities.Invoice;
 import com.filipegabriel.smart_budget.entities.Movement;
 import com.filipegabriel.smart_budget.entities.enums.MovementType;
 import com.filipegabriel.smart_budget.repositories.ClientRepository;
+import com.filipegabriel.smart_budget.repositories.InvoiceRepository;
 import com.filipegabriel.smart_budget.repositories.MovementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +33,9 @@ public class InvoiceReportService {
     private MovementRepository movementRepository;
 
     @Autowired
+    private InvoiceRepository invoiceRepository;
+
+    @Autowired
     private FeeCalculator feeCalculator;
 
     @Value("${reports.folder}")
@@ -44,8 +49,8 @@ public class InvoiceReportService {
                 client.getAccounts().get(0).getAccountId()
         );
 
-        long creditCount = movements.stream().filter(m -> m.getMovementType().name().equals("DEPOSIT")).count();
-        long debitCount = movements.stream().filter(m -> !m.getMovementType().name().equals("DEPOSIT")).count();
+        long creditCount = movements.stream().filter(m -> m.getMovementType() == MovementType.DEPOSIT).count();
+        long debitCount = movements.stream().filter(m -> m.getMovementType() != MovementType.DEPOSIT).count();
         int totalMovements = movements.size();
         BigDecimal totalPaid = feeCalculator.calculateFee(totalMovements);
 
@@ -55,6 +60,20 @@ public class InvoiceReportService {
                 .skip(1)
                 .map(m -> m.getMovementType() == MovementType.DEPOSIT ? m.getAmount() : m.getAmount().negate())
                 .reduce(initialBalance, BigDecimal::add);
+
+        Invoice invoice = new Invoice();
+        invoice.setClient(client);
+        invoice.setStartDate(LocalDate.now());
+        invoice.setEndDate(LocalDate.now());
+        invoice.setFeeAmount(totalPaid);
+        invoice.setMovementCount((long) totalMovements);
+
+        invoice = invoiceRepository.save(invoice);
+
+        for (Movement m : movements) {
+            m.setInvoice(invoice);
+        }
+        movementRepository.saveAll(movements);
 
         String address = client.getAddresses().isEmpty() ? "No address" :
                 client.getAddresses().get(0).getStreet() + ", " +
@@ -87,8 +106,8 @@ public class InvoiceReportService {
                 .filter(m -> !m.getMovementDate().isBefore(start) && !m.getMovementDate().isAfter(end))
                 .collect(Collectors.toList());
 
-        long creditCount = movements.stream().filter(m -> m.getMovementType().name().equals("DEPOSIT")).count();
-        long debitCount = movements.stream().filter(m -> !m.getMovementType().name().equals("DEPOSIT")).count();
+        long creditCount = movements.stream().filter(m -> m.getMovementType() == MovementType.DEPOSIT).count();
+        long debitCount = movements.stream().filter(m -> m.getMovementType() != MovementType.DEPOSIT).count();
         int totalMovements = movements.size();
         BigDecimal totalPaid = feeCalculator.calculateFee(totalMovements);
 
@@ -98,6 +117,20 @@ public class InvoiceReportService {
                 .skip(1)
                 .map(m -> m.getMovementType() == MovementType.DEPOSIT ? m.getAmount() : m.getAmount().negate())
                 .reduce(initialBalance, BigDecimal::add);
+
+        Invoice invoice = new Invoice();
+        invoice.setClient(client);
+        invoice.setStartDate(start);
+        invoice.setEndDate(end);
+        invoice.setFeeAmount(totalPaid);
+        invoice.setMovementCount((long) totalMovements);
+
+        invoice = invoiceRepository.save(invoice);
+
+        for (Movement m : movements) {
+            m.setInvoice(invoice);
+        }
+        movementRepository.saveAll(movements);
 
         String address = client.getAddresses().isEmpty() ? "No address" :
                 client.getAddresses().get(0).getStreet() + ", " +
@@ -130,7 +163,7 @@ public class InvoiceReportService {
         for (Client client : clients) {
             BigDecimal balance = client.getAccounts().stream()
                     .flatMap(acc -> movementRepository.findByAccountAccountId(acc.getAccountId()).stream())
-                    .map(m -> m.getMovementType().name().equals("DEPOSIT") ? m.getAmount() : m.getAmount().negate())
+                    .map(m -> m.getMovementType() == MovementType.DEPOSIT ? m.getAmount() : m.getAmount().negate())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             sb.append(String.format(
