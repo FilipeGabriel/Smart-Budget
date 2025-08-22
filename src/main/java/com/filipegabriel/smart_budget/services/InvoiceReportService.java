@@ -6,9 +6,17 @@ import com.filipegabriel.smart_budget.entities.enums.MovementType;
 import com.filipegabriel.smart_budget.repositories.ClientRepository;
 import com.filipegabriel.smart_budget.repositories.MovementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,10 +33,16 @@ public class InvoiceReportService {
     @Autowired
     private FeeCalculator feeCalculator;
 
-    public String generateClientBalanceReport(Long clientId) {
-        Client client = clientRepository.findById(clientId).orElseThrow(() -> new IllegalArgumentException("Client not found"));
+    @Value("${reports.folder}")
+    private String reportsFolder;
 
-        List<Movement> movements = movementRepository.findByAccountAccountId(client.getAccounts().get(0).getAccountId());
+    public String generateClientBalanceReport(Long clientId) {
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found"));
+
+        List<Movement> movements = movementRepository.findByAccountAccountId(
+                client.getAccounts().get(0).getAccountId()
+        );
 
         long creditCount = movements.stream().filter(m -> m.getMovementType().name().equals("DEPOSIT")).count();
         long debitCount = movements.stream().filter(m -> !m.getMovementType().name().equals("DEPOSIT")).count();
@@ -51,10 +65,17 @@ public class InvoiceReportService {
                         client.getAddresses().get(0).getState() + ", " +
                         client.getAddresses().get(0).getZipCode();
 
-        return String.format(
-                "Relatório do cliente: %s\nCliente desde: %s\nEndereço: %s\nMovimentações de crédito: %d\nMovimentações de débito: %d\nTotal de movimentações: %d\nValor pago pelas movimentações: %s\nSaldo inicial: %s\nSaldo atual: %s",
+        String report = String.format(
+                "Relatório do cliente: %s\nCliente desde: %s\nEndereço: %s\n" +
+                        "Movimentações de crédito: %d\nMovimentações de débito: %d\n" +
+                        "Total de movimentações: %d\nValor pago pelas movimentações: %s\n" +
+                        "Saldo inicial: %s\nSaldo atual: %s",
                 client.getName(), client.getRegistrationDate(), address, creditCount, debitCount, totalMovements, totalPaid, initialBalance, currentBalance
         );
+
+        saveReportToFile(report, "relatorio_cliente_" + client.getName() + ".txt");
+
+        return report;
     }
 
     public String generateClientBalanceReportPeriod(Long clientId, LocalDate start, LocalDate end) {
@@ -87,17 +108,24 @@ public class InvoiceReportService {
                         client.getAddresses().get(0).getState() + ", " +
                         client.getAddresses().get(0).getZipCode();
 
-        return String.format(
-                "Relatório do cliente por periodo: %s\nPeríodo: %s a %s\nCliente desde: %s\nEndereço: %s\nMovimentações de crédito: %d\nMovimentações de débito: %d\nTotal de movimentações: %d\nValor pago pelas movimentações: %s\nSaldo inicial: %s\nSaldo atual: %s",
+        String report = String.format(
+                "Relatório do cliente por período: %s\nPeríodo: %s a %s\nCliente desde: %s\nEndereço: %s\n" +
+                        "Movimentações de crédito: %d\nMovimentações de débito: %d\n" +
+                        "Total de movimentações: %d\nValor pago pelas movimentações: %s\n" +
+                        "Saldo inicial: %s\nSaldo atual: %s",
                 client.getName(), start, end, client.getRegistrationDate(), address, creditCount, debitCount, totalMovements, totalPaid, initialBalance, currentBalance
         );
+
+        saveReportToFile(report, "relatorio_de_cliente_" + client.getName() + "_por_periodo.txt");
+
+        return report;
     }
 
     public String generateAllClientsBalanceReport(LocalDate date) {
         StringBuilder sb = new StringBuilder();
         List<Client> clients = clientRepository.findAll();
 
-        sb.append(String.format("Relatório de saldo de todos os clientes:\n"));
+        sb.append("Relatório de saldo de todos os clientes:\n");
 
         for (Client client : clients) {
             BigDecimal balance = client.getAccounts().stream()
@@ -111,7 +139,10 @@ public class InvoiceReportService {
             ));
         }
 
-        return sb.toString();
+        String report = sb.toString();
+        saveReportToFile(report, "relatorio_com_todos_clientes.txt");
+
+        return report;
     }
 
     public String generateCompanyRevenueReport(LocalDate start, LocalDate end) {
@@ -139,6 +170,49 @@ public class InvoiceReportService {
 
         sb.append(String.format("Total de receitas: %s", totalRevenue));
 
-        return sb.toString();
+        String report = sb.toString();
+        saveReportToFile(report, "relatorio_de_receita_xpto.txt");
+
+        return report;
+    }
+
+    private void saveReportToFile(String content, String baseFileName) {
+        try {
+            Path folderPath = Paths.get(reportsFolder);
+            Files.createDirectories(folderPath);
+
+            String fileName = generateUniqueFileName(folderPath, baseFileName);
+            Path filePath = folderPath.resolve(fileName);
+
+            try (BufferedWriter writer = Files.newBufferedWriter(
+                    filePath,
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE_NEW)) {
+                writer.write(content);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar relatório em arquivo", e);
+        }
+    }
+
+    private String generateUniqueFileName(Path folderPath, String baseFileName) {
+        String fileName = baseFileName;
+        Path filePath = folderPath.resolve(fileName);
+        int count = 1;
+
+        while (Files.exists(filePath)) {
+            int dotIndex = baseFileName.lastIndexOf('.');
+            if (dotIndex == -1) {
+                fileName = baseFileName + "(" + count + ")";
+            } else {
+                String name = baseFileName.substring(0, dotIndex);
+                String extension = baseFileName.substring(dotIndex);
+                fileName = name + "(" + count + ")" + extension;
+            }
+            filePath = folderPath.resolve(fileName);
+            count++;
+        }
+
+        return fileName;
     }
 }
