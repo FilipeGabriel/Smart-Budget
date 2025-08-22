@@ -7,6 +7,7 @@ import com.filipegabriel.smart_budget.entities.enums.MovementType;
 import com.filipegabriel.smart_budget.repositories.ClientRepository;
 import com.filipegabriel.smart_budget.repositories.InvoiceRepository;
 import com.filipegabriel.smart_budget.repositories.MovementRepository;
+import com.filipegabriel.smart_budget.repositories.procedures.FeeProcedureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,9 @@ public class InvoiceReportService {
     @Autowired
     private FeeCalculator feeCalculator;
 
+    @Autowired
+    private FeeProcedureRepository feeProcedureRepository;
+
     @Value("${reports.folder}")
     private String reportsFolder;
 
@@ -52,7 +56,7 @@ public class InvoiceReportService {
         long creditCount = movements.stream().filter(m -> m.getMovementType() == MovementType.DEPOSIT).count();
         long debitCount = movements.stream().filter(m -> m.getMovementType() != MovementType.DEPOSIT).count();
         int totalMovements = movements.size();
-        BigDecimal totalPaid = feeCalculator.calculateFee(totalMovements);
+        BigDecimal totalPaid = feeProcedureRepository.calculateFee(totalMovements);
 
         BigDecimal initialBalance = movements.isEmpty() ? BigDecimal.ZERO : movements.get(0).getAmount();
 
@@ -109,7 +113,7 @@ public class InvoiceReportService {
         long creditCount = movements.stream().filter(m -> m.getMovementType() == MovementType.DEPOSIT).count();
         long debitCount = movements.stream().filter(m -> m.getMovementType() != MovementType.DEPOSIT).count();
         int totalMovements = movements.size();
-        BigDecimal totalPaid = feeCalculator.calculateFee(totalMovements);
+        BigDecimal totalPaid = feeProcedureRepository.calculateFee(totalMovements);
 
         BigDecimal initialBalance = movements.isEmpty() ? BigDecimal.ZERO : movements.get(0).getAmount();
 
