@@ -23,7 +23,7 @@ public class Address {
     private String street;
 
     @Column(unique = true, nullable = false)
-    private String number;
+    private String streetNumber;
 
     @Column(nullable = false)
     private String complement;

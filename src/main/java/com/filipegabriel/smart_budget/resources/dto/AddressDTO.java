@@ -11,7 +11,7 @@ public class AddressDTO {
 
     private String street;
 
-    private String number;
+    private String streetNumber;
 
     private String complement;
 

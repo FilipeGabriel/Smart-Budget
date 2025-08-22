@@ -7,7 +7,6 @@ import com.filipegabriel.smart_budget.resources.dto.AddressDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.websocket.ClientEndpoint;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +33,7 @@ public class AddressService {
         Client client = clientService.getById(addressDTO.getClientId());
 
         address.setStreet(addressDTO.getStreet());
-        address.setNumber(addressDTO.getNumber());
+        address.setStreetNumber(addressDTO.getStreetNumber());
         address.setComplement(addressDTO.getComplement());
         address.setNeighborhood(addressDTO.getNeighborhood());
         address.setCity(addressDTO.getCity());
@@ -54,7 +53,7 @@ public class AddressService {
 
     public void upDateAddress(Address address, AddressDTO addressDTO) {
         address.setStreet(addressDTO.getStreet());
-        address.setNumber(addressDTO.getNumber());
+        address.setStreetNumber(addressDTO.getStreetNumber());
         address.setComplement(addressDTO.getComplement());
         address.setNeighborhood(addressDTO.getNeighborhood());
         address.setCity(addressDTO.getCity());

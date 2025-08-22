@@ -101,7 +101,7 @@ public class ClientService {
 
         Address address = new Address();
         address.setStreet(clientDTO.getAddressStreet());
-        address.setNumber(clientDTO.getAddressNumber());
+        address.setStreetNumber(clientDTO.getAddressNumber());
         address.setComplement(clientDTO.getAddressComplement());
         address.setNeighborhood(clientDTO.getAddressNeighborhood());
         address.setCity(clientDTO.getAddressCity());

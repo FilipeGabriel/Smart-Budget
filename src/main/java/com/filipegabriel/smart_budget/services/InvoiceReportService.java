@@ -58,7 +58,7 @@ public class InvoiceReportService {
 
         String address = client.getAddresses().isEmpty() ? "No address" :
                 client.getAddresses().get(0).getStreet() + ", " +
-                        client.getAddresses().get(0).getNumber() + ", " +
+                        client.getAddresses().get(0).getStreetNumber() + ", " +
                         client.getAddresses().get(0).getComplement() + ", " +
                         client.getAddresses().get(0).getNeighborhood() + ", " +
                         client.getAddresses().get(0).getCity() + ", " +
@@ -101,7 +101,7 @@ public class InvoiceReportService {
 
         String address = client.getAddresses().isEmpty() ? "No address" :
                 client.getAddresses().get(0).getStreet() + ", " +
-                        client.getAddresses().get(0).getNumber() + ", " +
+                        client.getAddresses().get(0).getStreetNumber() + ", " +
                         client.getAddresses().get(0).getComplement() + ", " +
                         client.getAddresses().get(0).getNeighborhood() + ", " +
                         client.getAddresses().get(0).getCity() + ", " +
